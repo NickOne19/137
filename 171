@@ -1,0 +1,108 @@
+include <iostream>
+#include <vector>
+
+
+using namespace std;
+
+struct Konechn
+{
+    int left, right, ch;
+    bool in;
+
+    Konechn(int c, int l, int r)
+    {
+        ch = c;
+        left = l;
+        right = r;
+        in = false;
+    }
+   
+};
+
+Konechn LeftRight(int a)
+{
+    int left, right, n;
+    n = a;
+    right = n % 10;
+    while (n > 0)
+    {
+        left = n % 10;
+        n = n / 10;
+    }
+    return Konechn(a, left, right);
+}
+
+// curL - тек. длина, maxL - макс. длина, curVec - текущий набор
+// maxVec - набор самой большой длины, prevL - левый край цепочки, prevR - правый край цепочки
+void find_max_len(vector<Konechn>& vec, int curL, int& maxL, vector<Konechn>& curVec, vector<Konechn>& maxVec, int prevL, int prevR)
+{
+
+    if (curL > maxL)
+    {
+        maxL = curL;
+        maxVec = curVec;
+    }
+    for (int i = 0; i < vec.size(); ++i)
+    {
+        Konechn curTile = vec[i];
+        if (!vec[i].in)
+        {
+            if ((prevL != -1) && (prevR != -1))
+            {
+                if (curTile.left == prevR)
+                {
+                    vec[i].in = true;
+                    ++curL;
+                    curVec.push_back(curTile);
+                    find_max_len(vec, curL, maxL, curVec, maxVec, prevL, curTile.right);
+                    curVec.pop_back();
+                    --curL;
+                    vec[i].in = false;
+                }
+                if (curTile.right == prevL)
+                {
+                    vec[i].in = true;
+                    ++curL;
+                    curVec.insert(curVec.begin(), curTile);
+                    find_max_len(vec, curL, maxL, curVec, maxVec, curTile.left, prevR);
+                    curVec.pop_back();
+                    --curL;
+                    vec[i].in = false;
+                }
+            }
+            else
+            {
+                vec[i].in = true;
+                ++curL;
+                curVec.insert(curVec.begin(), curTile);
+                find_max_len(vec, curL, maxL, curVec, maxVec, curTile.left, curTile.right);
+                curVec.pop_back();
+                --curL;
+                vec[i].in = false;
+            }
+        }
+    }
+}
+
+// обёртка для вызова основной функции
+vector<Konechn> task1(vector<Konechn>& vec)
+{
+    int maxL = 0, curL = 0;
+    vector<Konechn> curVec;
+    vector<Konechn> MaxVec;
+    find_max_len(vec, curL, maxL, curVec, MaxVec, -1, -1);
+    return MaxVec;
+}
+
+
+int main()
+{
+    
+    vector<Konechn> Pair1 = { LeftRight(123), LeftRight(43567), LeftRight(22221), LeftRight(6784), LeftRight(3466), LeftRight(7777), LeftRight(8888), LeftRight(99431) };
+    vector<Konechn> maxTile = task1(Pair1);
+    for (auto item : maxTile)
+    {
+        cout << "(" << item.left << " " << item.ch<< " " << item.right << ")" << " ";
+    }  
+
+}
